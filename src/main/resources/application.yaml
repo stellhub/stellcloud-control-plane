@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: stellcloud-control-plane
+
+server:
+  port: 18080
+
+stellflux:
+  http:
+    client:
+      clients:
+        stellorbit-service:
+          base-url: http://127.0.0.1:18081
+          connect-timeout-millis: 3000
+          read-timeout-millis: 10000
+          write-timeout-millis: 10000
+        stellnula-service:
+          base-url: http://127.0.0.1:8060
+          connect-timeout-millis: 3000
+          read-timeout-millis: 10000
+          write-timeout-millis: 10000
+        stellflow-service:
+          base-url: http://127.0.0.1:18083
+          connect-timeout-millis: 3000
+          read-timeout-millis: 10000
+          write-timeout-millis: 10000
+        stellmap-service:
+          base-url: http://127.0.0.1:18084
+          connect-timeout-millis: 3000
+          read-timeout-millis: 10000
+          write-timeout-millis: 10000
+  opentelemetry:
+    resource:
+      service-name: stellcloud-control-plane
+    logs:
+      enabled: false
+    metrics:
+      enabled: false
+    traces:
+      enabled: false
