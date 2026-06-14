@@ -1,0 +1,56 @@
+name: Release Zip
+
+on:
+  push:
+    tags:
+      - '*'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build executable jar zip
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+
+      - name: Build
+        run: mvn -B package
+
+      - name: Package release zip
+        run: |
+          set -euo pipefail
+
+          RELEASE_NAME="stellcloud-control-plane-${GITHUB_REF_NAME}"
+          RELEASE_DIR="target/${RELEASE_NAME}"
+          ZIP_FILE="target/${RELEASE_NAME}.zip"
+          JAR_FILE="$(find target -maxdepth 1 -type f -name '*.jar' ! -name '*.original' | head -n 1)"
+
+          if [ -z "${JAR_FILE}" ]; then
+            echo "Executable jar not found in target directory."
+            exit 1
+          fi
+
+          mkdir -p "${RELEASE_DIR}"
+          cp "${JAR_FILE}" "${RELEASE_DIR}/stellcloud-control-plane.jar"
+          cp src/main/resources/application.yaml "${RELEASE_DIR}/application.yaml"
+
+          (cd "${RELEASE_DIR}" && zip -r "../${RELEASE_NAME}.zip" stellcloud-control-plane.jar application.yaml)
+          test -f "${ZIP_FILE}"
+
+      - name: Upload zip artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: stellcloud-control-plane-${{ github.ref_name }}
+          path: target/stellcloud-control-plane-${{ github.ref_name }}.zip
+          if-no-files-found: error
