@@ -2,10 +2,10 @@ package io.github.stellcloud.api.nula.vo;
 
 import jakarta.validation.constraints.NotBlank;
 
-/** 应用配置编辑页面请求视图对象。 */
-public record AppConfigRequestVO(
+/** 公共配置编辑页面请求视图对象。 */
+public record CommonConfigRequestVO(
         String id,
-        String appId,
+        String ownerId,
         @NotBlank String name,
         String description,
         @NotBlank String environment,

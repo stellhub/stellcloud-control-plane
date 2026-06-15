@@ -1,16 +1,23 @@
 package io.github.stellcloud.api.nula.vo;
 
-/** 应用配置页面视图对象。 */
-public record AppConfigVO(
+import com.fasterxml.jackson.databind.JsonNode;
+
+/** Feature Flag 页面视图对象。 */
+public record FeatureFlagVO(
         String id,
         String appId,
+        String key,
         String name,
         String description,
         String environment,
         String cluster,
         String group,
-        String format,
-        boolean formatLocked,
+        String type,
+        boolean enabled,
+        JsonNode defaultValue,
+        JsonNode rules,
+        JsonNode variants,
+        JsonNode rollout,
         String content,
         String version,
         String status,

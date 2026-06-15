@@ -5,6 +5,13 @@ import io.github.stellcloud.api.nula.vo.AppConfigListVO;
 import io.github.stellcloud.api.nula.vo.AppConfigRequestVO;
 import io.github.stellcloud.api.nula.vo.AppConfigScopeVO;
 import io.github.stellcloud.api.nula.vo.AppConfigVO;
+import io.github.stellcloud.api.nula.vo.CommonConfigListVO;
+import io.github.stellcloud.api.nula.vo.CommonConfigRequestVO;
+import io.github.stellcloud.api.nula.vo.CommonConfigScopeVO;
+import io.github.stellcloud.api.nula.vo.CommonConfigVO;
+import io.github.stellcloud.api.nula.vo.FeatureFlagListVO;
+import io.github.stellcloud.api.nula.vo.FeatureFlagRequestVO;
+import io.github.stellcloud.api.nula.vo.FeatureFlagVO;
 import io.github.stellcloud.api.nula.vo.HealthVO;
 import io.github.stellcloud.api.nula.vo.SharedConfigPageVO;
 import io.github.stellcloud.infrastructure.http.DownstreamHttpGateway;
@@ -55,7 +62,7 @@ public class NulaProxyController extends AbstractDownstreamProxyController {
     }
 
     /** 查询当前应用下的配置范围选项。 */
-    @GetMapping("/configs/scope")
+    @GetMapping({"/configs/scope", "/app-config/scope"})
     public AppConfigScopeVO scope(
             @RequestParam(name = "appId", required = false) String appId,
             @RequestHeader(name = "X-Stell-App-Id", required = false) String appIdHeader) {
@@ -63,17 +70,18 @@ public class NulaProxyController extends AbstractDownstreamProxyController {
     }
 
     /** 查询应用配置列表。 */
-    @GetMapping("/configs")
+    @GetMapping({"/configs", "/app-config"})
     public AppConfigListVO listConfigs(
             @RequestParam(name = "appId", required = false) String appId,
             @RequestParam(name = "environment", required = false) String environment,
             @RequestParam(name = "cluster", required = false) String cluster,
+            @RequestParam(name = "group", required = false) String group,
             @RequestHeader(name = "X-Stell-App-Id", required = false) String appIdHeader) {
-        return nulaControlPlaneClient.listConfigs(appId, environment, cluster, appIdHeader);
+        return nulaControlPlaneClient.listConfigs(appId, environment, cluster, group, appIdHeader);
     }
 
     /** 查询应用配置详情。 */
-    @GetMapping("/configs/{configId}")
+    @GetMapping({"/configs/{configId}", "/app-config/{configId}"})
     public AppConfigVO getConfig(
             @PathVariable("configId") @NotBlank String configId,
             @RequestParam(name = "appId", required = false) String appId,
@@ -82,7 +90,7 @@ public class NulaProxyController extends AbstractDownstreamProxyController {
     }
 
     /** 创建应用配置草稿。 */
-    @PostMapping("/configs")
+    @PostMapping({"/configs", "/app-config"})
     public AppConfigVO createConfig(
             @Valid @RequestBody AppConfigRequestVO request,
             @RequestHeader(name = "X-Stell-App-Id", required = false) String appIdHeader,
@@ -91,7 +99,7 @@ public class NulaProxyController extends AbstractDownstreamProxyController {
     }
 
     /** 保存应用配置草稿。 */
-    @PutMapping("/configs/{configId}")
+    @PutMapping({"/configs/{configId}", "/app-config/{configId}"})
     public AppConfigVO saveDraft(
             @PathVariable("configId") @NotBlank String configId,
             @Valid @RequestBody AppConfigRequestVO request,
@@ -101,7 +109,7 @@ public class NulaProxyController extends AbstractDownstreamProxyController {
     }
 
     /** 发布应用配置。 */
-    @PostMapping("/configs/{configId}/publish")
+    @PostMapping({"/configs/{configId}/publish", "/app-config/{configId}/publish"})
     public AppConfigVO publish(
             @PathVariable("configId") @NotBlank String configId,
             @Valid @RequestBody AppConfigRequestVO request,
@@ -111,7 +119,7 @@ public class NulaProxyController extends AbstractDownstreamProxyController {
     }
 
     /** 删除应用配置。 */
-    @DeleteMapping("/configs/{configId}")
+    @DeleteMapping({"/configs/{configId}", "/app-config/{configId}"})
     public ResponseEntity<Void> deleteConfig(
             @PathVariable("configId") @NotBlank String configId,
             @RequestParam(name = "appId", required = false) String appId,
@@ -119,6 +127,136 @@ public class NulaProxyController extends AbstractDownstreamProxyController {
             @RequestParam(name = "cluster", required = false) String cluster,
             @RequestHeader(name = "X-Stell-App-Id", required = false) String appIdHeader) {
         nulaControlPlaneClient.deleteConfig(configId, appId, environment, cluster, appIdHeader);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** 查询公共配置范围选项。 */
+    @GetMapping("/common-config/scope")
+    public CommonConfigScopeVO commonConfigScope(
+            @RequestParam(name = "ownerId", required = false) String ownerId,
+            @RequestHeader(name = "X-Stell-Public-Owner-Id", required = false) String ownerIdHeader) {
+        return nulaControlPlaneClient.commonConfigScope(ownerId, ownerIdHeader);
+    }
+
+    /** 查询公共配置列表。 */
+    @GetMapping("/common-config")
+    public CommonConfigListVO listCommonConfigs(
+            @RequestParam(name = "ownerId", required = false) String ownerId,
+            @RequestParam(name = "environment", required = false) String environment,
+            @RequestParam(name = "cluster", required = false) String cluster,
+            @RequestParam(name = "group", required = false) String group,
+            @RequestHeader(name = "X-Stell-Public-Owner-Id", required = false) String ownerIdHeader) {
+        return nulaControlPlaneClient.listCommonConfigs(ownerId, environment, cluster, group, ownerIdHeader);
+    }
+
+    /** 查询公共配置详情。 */
+    @GetMapping("/common-config/{configId}")
+    public CommonConfigVO getCommonConfig(
+            @PathVariable("configId") @NotBlank String configId,
+            @RequestParam(name = "ownerId", required = false) String ownerId,
+            @RequestHeader(name = "X-Stell-Public-Owner-Id", required = false) String ownerIdHeader) {
+        return nulaControlPlaneClient.getCommonConfig(configId, ownerId, ownerIdHeader);
+    }
+
+    /** 创建公共配置草稿。 */
+    @PostMapping("/common-config")
+    public CommonConfigVO createCommonConfig(
+            @Valid @RequestBody CommonConfigRequestVO request,
+            @RequestHeader(name = "X-Stell-Public-Owner-Id", required = false) String ownerIdHeader,
+            @RequestHeader(name = "X-Operator", required = false) String operatorHeader) {
+        return nulaControlPlaneClient.createCommonConfig(request, ownerIdHeader, operatorHeader);
+    }
+
+    /** 保存公共配置草稿。 */
+    @PutMapping("/common-config/{configId}")
+    public CommonConfigVO saveCommonConfigDraft(
+            @PathVariable("configId") @NotBlank String configId,
+            @Valid @RequestBody CommonConfigRequestVO request,
+            @RequestHeader(name = "X-Stell-Public-Owner-Id", required = false) String ownerIdHeader,
+            @RequestHeader(name = "X-Operator", required = false) String operatorHeader) {
+        return nulaControlPlaneClient.saveCommonConfigDraft(configId, request, ownerIdHeader, operatorHeader);
+    }
+
+    /** 发布公共配置。 */
+    @PostMapping("/common-config/{configId}/publish")
+    public CommonConfigVO publishCommonConfig(
+            @PathVariable("configId") @NotBlank String configId,
+            @Valid @RequestBody CommonConfigRequestVO request,
+            @RequestHeader(name = "X-Stell-Public-Owner-Id", required = false) String ownerIdHeader,
+            @RequestHeader(name = "X-Operator", required = false) String operatorHeader) {
+        return nulaControlPlaneClient.publishCommonConfig(configId, request, ownerIdHeader, operatorHeader);
+    }
+
+    /** 删除公共配置。 */
+    @DeleteMapping("/common-config/{configId}")
+    public ResponseEntity<Void> deleteCommonConfig(
+            @PathVariable("configId") @NotBlank String configId,
+            @RequestParam(name = "ownerId", required = false) String ownerId,
+            @RequestParam(name = "environment", required = false) String environment,
+            @RequestParam(name = "cluster", required = false) String cluster,
+            @RequestHeader(name = "X-Stell-Public-Owner-Id", required = false) String ownerIdHeader) {
+        nulaControlPlaneClient.deleteCommonConfig(configId, ownerId, environment, cluster, ownerIdHeader);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** 查询 Feature Flag 列表。 */
+    @GetMapping("/feature-flags")
+    public FeatureFlagListVO listFeatureFlags(
+            @RequestParam(name = "appId", required = false) String appId,
+            @RequestParam(name = "environment", required = false) String environment,
+            @RequestParam(name = "cluster", required = false) String cluster,
+            @RequestParam(name = "group", required = false) String group,
+            @RequestHeader(name = "X-Stell-App-Id", required = false) String appIdHeader) {
+        return nulaControlPlaneClient.listFeatureFlags(appId, environment, cluster, group, appIdHeader);
+    }
+
+    /** 查询 Feature Flag 详情。 */
+    @GetMapping("/feature-flags/{flagKey}")
+    public FeatureFlagVO getFeatureFlag(
+            @PathVariable("flagKey") @NotBlank String flagKey,
+            @RequestParam(name = "appId", required = false) String appId,
+            @RequestHeader(name = "X-Stell-App-Id", required = false) String appIdHeader) {
+        return nulaControlPlaneClient.getFeatureFlag(flagKey, appId, appIdHeader);
+    }
+
+    /** 创建 Feature Flag 草稿。 */
+    @PostMapping("/feature-flags")
+    public FeatureFlagVO createFeatureFlag(
+            @Valid @RequestBody FeatureFlagRequestVO request,
+            @RequestHeader(name = "X-Stell-App-Id", required = false) String appIdHeader,
+            @RequestHeader(name = "X-Operator", required = false) String operatorHeader) {
+        return nulaControlPlaneClient.createFeatureFlag(request, appIdHeader, operatorHeader);
+    }
+
+    /** 保存 Feature Flag 草稿。 */
+    @PutMapping("/feature-flags/{flagKey}")
+    public FeatureFlagVO saveFeatureFlagDraft(
+            @PathVariable("flagKey") @NotBlank String flagKey,
+            @Valid @RequestBody FeatureFlagRequestVO request,
+            @RequestHeader(name = "X-Stell-App-Id", required = false) String appIdHeader,
+            @RequestHeader(name = "X-Operator", required = false) String operatorHeader) {
+        return nulaControlPlaneClient.saveFeatureFlagDraft(flagKey, request, appIdHeader, operatorHeader);
+    }
+
+    /** 发布 Feature Flag。 */
+    @PostMapping("/feature-flags/{flagKey}/publish")
+    public FeatureFlagVO publishFeatureFlag(
+            @PathVariable("flagKey") @NotBlank String flagKey,
+            @Valid @RequestBody FeatureFlagRequestVO request,
+            @RequestHeader(name = "X-Stell-App-Id", required = false) String appIdHeader,
+            @RequestHeader(name = "X-Operator", required = false) String operatorHeader) {
+        return nulaControlPlaneClient.publishFeatureFlag(flagKey, request, appIdHeader, operatorHeader);
+    }
+
+    /** 删除 Feature Flag。 */
+    @DeleteMapping("/feature-flags/{flagKey}")
+    public ResponseEntity<Void> deleteFeatureFlag(
+            @PathVariable("flagKey") @NotBlank String flagKey,
+            @RequestParam(name = "appId", required = false) String appId,
+            @RequestParam(name = "environment", required = false) String environment,
+            @RequestParam(name = "cluster", required = false) String cluster,
+            @RequestHeader(name = "X-Stell-App-Id", required = false) String appIdHeader) {
+        nulaControlPlaneClient.deleteFeatureFlag(flagKey, appId, environment, cluster, appIdHeader);
         return ResponseEntity.noContent().build();
     }
 

@@ -14,6 +14,7 @@ public class DownstreamHttpClientConfiguration {
 
     private static final String STELLORBIT_SERVICE = "stellorbit-service";
     private static final String STELLNULA_SERVICE = "stellnula-service";
+    private static final String STELLATLAS_SERVICE = "stellatlas-service";
     private static final String STELLFLOW_SERVICE = "stellflow-service";
     private static final String STELLMAP_SERVICE = "stellmap-service";
 
@@ -43,6 +44,20 @@ public class DownstreamHttpClientConfiguration {
     public StellfluxHttpClient nulaHttpClient(
             StellfluxHttpClientFactory factory, StellfluxHttpClientProperties properties) {
         return createClient(factory, properties, STELLNULA_SERVICE, "http://127.0.0.1:8060");
+    }
+
+    /**
+     * 创建 CMDB HTTP 客户端。
+     *
+     * @param factory Stellflux HTTP client factory
+     * @param properties HTTP client properties
+     * @return CMDB HTTP 客户端
+     */
+    @Bean
+    @Qualifier("atlasHttpClient")
+    public StellfluxHttpClient atlasHttpClient(
+            StellfluxHttpClientFactory factory, StellfluxHttpClientProperties properties) {
+        return createClient(factory, properties, STELLATLAS_SERVICE, "http://127.0.0.1:8080");
     }
 
     /**
