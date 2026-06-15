@@ -6,7 +6,7 @@
 
     <groupId>io.github.stellhub</groupId>
     <artifactId>stellcloud-control-plane</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <name>stellcloud-control-plane</name>
     <description>Unified backend control plane for StellCloud</description>
 
